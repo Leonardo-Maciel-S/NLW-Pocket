@@ -1,169 +1,200 @@
 import { X } from 'lucide-react'
 
 import {
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
 } from './ui/dialog'
 
 import { Label } from './ui/label'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import {
-    RadioGroup,
-    RadioGroupIndicator,
-    RadioGroupItem,
+  RadioGroup,
+  RadioGroupIndicator,
+  RadioGroupItem,
 } from './ui/radio-group'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { createGoal } from '../http/create-goal'
+import { useQueryClient } from '@tanstack/react-query'
+
+const createGoalForm = z.object({
+  title: z.string().min(1, 'Informe a atividade que deseja realizar'),
+  desiredWeeklyFrequency: z.coerce.number().min(1).max(7),
+})
+
+type CreateGoalForm = z.infer<typeof createGoalForm>
 
 export function CreateGoal() {
-    return (
-        <DialogContent>
-            <div className="flex flex-col gap-6 h-full">
-                <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                        <DialogTitle>Cadastrar meta</DialogTitle>
-                        <DialogClose>
-                            <X className="size-5 text-zinc-600" />
-                        </DialogClose>
-                    </div>
+  const queryClient = useQueryClient()
 
-                    <DialogDescription>
-                        Adicione atividades que te fazem bem e que você quer
-                        continuar praticando toda semana.
-                    </DialogDescription>
-                </div>
+  const { register, control, handleSubmit, formState, reset } =
+    useForm<CreateGoalForm>({
+      resolver: zodResolver(createGoalForm),
+    })
 
-                <form
-                    action=""
-                    className="flex flex-col justify-between flex-1"
-                >
-                    <div className="">
-                        <div className="flex flex-col gap-6">
-                            <div className="flex flex-col gap-2">
-                                <Label htmlFor="title">Qual a atividade?</Label>
-                                <Input
-                                    id="title"
-                                    autoFocus
-                                    placeholder="Praticar exercícios, meditar, etc."
-                                />
-                            </div>
+  async function hundleCreateGoal(data: CreateGoalForm) {
+    await createGoal({
+      title: data.title,
+      desiredWeeklyFrequency: data.desiredWeeklyFrequency,
+    })
 
-                            <div className="flex flex-col gap-2">
-                                <Label htmlFor="">
-                                    Quantas vezes na semana?
-                                </Label>
-                                <RadioGroup id="">
-                                    <RadioGroupItem
-                                        value="1"
-                                        className="flex justify-between"
-                                    >
-                                        <RadioGroupIndicator />
-                                        <span className="text-zinc-300 text-sm font-medium leading-none">
-                                            1x na semana
-                                        </span>
-                                        <span className="text-lg leading-none">
-                                            🥱
-                                        </span>
-                                    </RadioGroupItem>
+    queryClient.invalidateQueries({ queryKey: ['summary'] })
+    queryClient.invalidateQueries({ queryKey: ['pending-goals'] })
 
-                                    <RadioGroupItem
-                                        value="2"
-                                        className="flex justify-between"
-                                    >
-                                        <RadioGroupIndicator />
-                                        <span className="text-zinc-300 text-sm font-medium leading-none">
-                                            2x na semana
-                                        </span>
-                                        <span className="text-lg leading-none">
-                                            🙂
-                                        </span>
-                                    </RadioGroupItem>
+    reset()
+  }
 
-                                    <RadioGroupItem
-                                        value="3"
-                                        className="flex justify-between"
-                                    >
-                                        <RadioGroupIndicator />
-                                        <span className="text-zinc-300 text-sm font-medium leading-none">
-                                            3x na semana
-                                        </span>
-                                        <span className="text-lg leading-none">
-                                            😎
-                                        </span>
-                                    </RadioGroupItem>
+  return (
+    <DialogContent>
+      <div className="flex flex-col gap-6 h-full">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <DialogTitle>Cadastrar meta</DialogTitle>
+            <DialogClose>
+              <X className="size-5 text-zinc-600" />
+            </DialogClose>
+          </div>
 
-                                    <RadioGroupItem
-                                        value="4"
-                                        className="flex justify-between"
-                                    >
-                                        <RadioGroupIndicator />
-                                        <span className="text-zinc-300 text-sm font-medium leading-none">
-                                            4x na semana
-                                        </span>
-                                        <span className="text-lg leading-none">
-                                            😜
-                                        </span>
-                                    </RadioGroupItem>
+          <DialogDescription>
+            Adicione atividades que te fazem bem e que você quer continuar
+            praticando toda semana.
+          </DialogDescription>
+        </div>
 
-                                    <RadioGroupItem
-                                        value="5"
-                                        className="flex justify-between"
-                                    >
-                                        <RadioGroupIndicator />
-                                        <span className="text-zinc-300 text-sm font-medium leading-none">
-                                            5x na semana
-                                        </span>
-                                        <span className="text-lg leading-none">
-                                            🤨
-                                        </span>
-                                    </RadioGroupItem>
+        <form
+          action=""
+          onSubmit={handleSubmit(hundleCreateGoal)}
+          className="flex flex-col justify-between flex-1"
+        >
+          <div className="">
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="title">Qual a atividade?</Label>
+                <Input
+                  id="title"
+                  autoFocus
+                  placeholder="Praticar exercícios, meditar, etc..."
+                  {...register('title')}
+                />
 
-                                    <RadioGroupItem
-                                        value="6"
-                                        className="flex justify-between"
-                                    >
-                                        <RadioGroupIndicator />
-                                        <span className="text-zinc-300 text-sm font-medium leading-none">
-                                            6x na semana
-                                        </span>
-                                        <span className="text-lg leading-none">
-                                            🤯
-                                        </span>
-                                    </RadioGroupItem>
+                {formState.errors.title && (
+                  <p className="text-red-400 text-sm">
+                    {formState.errors.title.message}
+                  </p>
+                )}
+              </div>
 
-                                    <RadioGroupItem
-                                        value="7"
-                                        className="flex justify-between"
-                                    >
-                                        <RadioGroupIndicator />
-                                        <span className="text-zinc-300 text-sm font-medium leading-none">
-                                            Todos os dias da semana
-                                        </span>
-                                        <span className="text-lg leading-none">
-                                            🔥
-                                        </span>
-                                    </RadioGroupItem>
-                                </RadioGroup>
-                            </div>
-                        </div>
-                    </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="">Quantas vezes na semana?</Label>
+                <Controller
+                  control={control}
+                  name="desiredWeeklyFrequency"
+                  defaultValue={3}
+                  render={({ field }) => {
+                    return (
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        value={String(field.value)}
+                      >
+                        <RadioGroupItem
+                          value="1"
+                          className="flex justify-between"
+                        >
+                          <RadioGroupIndicator />
+                          <span className="text-zinc-300 text-sm font-medium leading-none">
+                            1x na semana
+                          </span>
+                          <span className="text-lg leading-none">🥱</span>
+                        </RadioGroupItem>
 
-                    <div className="flex items-center gap-3">
-                        <DialogClose asChild>
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                className="flex-1"
-                            >
-                                Fechar
-                            </Button>
-                        </DialogClose>
+                        <RadioGroupItem
+                          value="2"
+                          className="flex justify-between"
+                        >
+                          <RadioGroupIndicator />
+                          <span className="text-zinc-300 text-sm font-medium leading-none">
+                            2x na semana
+                          </span>
+                          <span className="text-lg leading-none">🙂</span>
+                        </RadioGroupItem>
 
-                        <Button className="flex-1">Salvar</Button>
-                    </div>
-                </form>
+                        <RadioGroupItem
+                          value="3"
+                          className="flex justify-between"
+                        >
+                          <RadioGroupIndicator />
+                          <span className="text-zinc-300 text-sm font-medium leading-none">
+                            3x na semana
+                          </span>
+                          <span className="text-lg leading-none">😎</span>
+                        </RadioGroupItem>
+
+                        <RadioGroupItem
+                          value="4"
+                          className="flex justify-between"
+                        >
+                          <RadioGroupIndicator />
+                          <span className="text-zinc-300 text-sm font-medium leading-none">
+                            4x na semana
+                          </span>
+                          <span className="text-lg leading-none">😜</span>
+                        </RadioGroupItem>
+
+                        <RadioGroupItem
+                          value="5"
+                          className="flex justify-between"
+                        >
+                          <RadioGroupIndicator />
+                          <span className="text-zinc-300 text-sm font-medium leading-none">
+                            5x na semana
+                          </span>
+                          <span className="text-lg leading-none">🤨</span>
+                        </RadioGroupItem>
+
+                        <RadioGroupItem
+                          value="6"
+                          className="flex justify-between"
+                        >
+                          <RadioGroupIndicator />
+                          <span className="text-zinc-300 text-sm font-medium leading-none">
+                            6x na semana
+                          </span>
+                          <span className="text-lg leading-none">🤯</span>
+                        </RadioGroupItem>
+
+                        <RadioGroupItem
+                          value="7"
+                          className="flex justify-between"
+                        >
+                          <RadioGroupIndicator />
+                          <span className="text-zinc-300 text-sm font-medium leading-none">
+                            Todos os dias da semana
+                          </span>
+                          <span className="text-lg leading-none">🔥</span>
+                        </RadioGroupItem>
+                      </RadioGroup>
+                    )
+                  }}
+                />
+              </div>
             </div>
-        </DialogContent>
-    )
+          </div>
+
+          <div className="flex items-center gap-3">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary" className="flex-1">
+                Fechar
+              </Button>
+            </DialogClose>
+
+            <Button className="flex-1">Salvar</Button>
+          </div>
+        </form>
+      </div>
+    </DialogContent>
+  )
 }
