@@ -1,5 +1,5 @@
-import logo from '../../assets/logo-in-obirt.svg'
-import letsStart from '../../assets/lets-start-illustration.svg'
+import logo from '../assets/logo-in-obirt.svg'
+import letsStart from '../assets/lets-start-illustration.svg'
 import { DialogTrigger } from '../components/ui/dialog'
 import { Button } from '../components/ui/button'
 import { Plus } from 'lucide-react'
