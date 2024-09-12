@@ -78,8 +78,12 @@ export function Summury() {
           return (
             <div key={date} className="flex flex-col gap-4">
               <h3 className="font-medium">
-                <span className="capitalize">{weekDay}</span>{' '}
-                <span className="text-zinc-400 text-xs">({formatedDate})</span>
+                <div className="mb-2">
+                  <span className="capitalize">{weekDay}</span>{' '}
+                  <span className="text-zinc-400 text-xs">
+                    ({formatedDate})
+                  </span>
+                </div>{' '}
                 <ul className="flex flex-col gap-3">
                   {goals.map(goal => {
                     const time = dayjs(goal.completedAt).format('HH[:]mm')
